@@ -25,23 +25,6 @@ enum SidebarItem: Hashable {
             return nil
         }
     }
-
-    /// Returns a human-readable name for this sidebar item
-    /// Used for accessibility labels and VoiceOver announcements
-    var displayName: String {
-        switch self {
-        case .dashboard:
-            return "Dashboard"
-        case .registry:
-            return "Registry"
-        case .clawHub:
-            return "ClawHub"
-        case .agent(let agentType):
-            return agentType.displayName
-        case .settings:
-            return "Settings"
-        }
-    }
 }
 
 /// SidebarView is the app's sidebar navigation
@@ -90,7 +73,10 @@ struct SidebarView: View {
         List(selection: $selection) {
             // Section creates groups (shown as collapsible groups in macOS sidebar)
             Section {
-                sidebarRow(item: .dashboard) {
+                sidebarRow(
+                    item: .dashboard,
+                    accessibilityLabel: L10n.string(L10nKeys.sidebarDashboard, bundle: localizationBundle, locale: locale)
+                ) {
                     Label {
                         LText(key: L10nKeys.sidebarDashboard)
                     } icon: {
@@ -108,7 +94,10 @@ struct SidebarView: View {
                 )
 
                 // F09: Registry browser — browse and search skills.sh catalog
-                sidebarRow(item: .registry) {
+                sidebarRow(
+                    item: .registry,
+                    accessibilityLabel: L10n.string(L10nKeys.sidebarRegistry, bundle: localizationBundle, locale: locale)
+                ) {
                     Label {
                         LText(key: L10nKeys.sidebarRegistry)
                     } icon: {
@@ -120,7 +109,10 @@ struct SidebarView: View {
                         .fill(rowBackground(for: .registry))
                 )
 
-                sidebarRow(item: .clawHub) {
+                sidebarRow(
+                    item: .clawHub,
+                    accessibilityLabel: L10n.string(L10nKeys.sidebarClawHub, bundle: localizationBundle, locale: locale)
+                ) {
                     Label {
                         LText(key: L10nKeys.sidebarClawHub)
                     } icon: {
@@ -141,7 +133,10 @@ struct SidebarView: View {
                 ForEach(AgentType.allCases) { agentType in
                     let agent = skillManager.agents.first { $0.type == agentType }
 
-                    sidebarRow(item: .agent(agentType)) {
+                    sidebarRow(
+                        item: .agent(agentType),
+                        accessibilityLabel: agentType.displayName
+                    ) {
                         Label {
                             Text(agentType.displayName)
                                 .foregroundStyle(selection == .agent(agentType) ? .primary : .secondary)
@@ -309,9 +304,15 @@ struct SidebarView: View {
     /// with `List(selection:)`. List's native selection gesture can intercept Button tap events,
     /// causing intermittent unresponsiveness. Using `onTapGesture` with `contentShape(Rectangle())`
     /// ensures reliable click detection across the entire row.
+    ///
+    /// - Parameters:
+    ///   - item: The sidebar item identifier used for selection state
+    ///   - accessibilityLabel: Localized string for VoiceOver announcement (should match visible text)
+    ///   - label: View builder closure providing the visible label content
     @ViewBuilder
     private func sidebarRow<Label: View>(
         item: SidebarItem,
+        accessibilityLabel: String,
         @ViewBuilder label: () -> Label
     ) -> some View {
         // Use HStack + Spacer to make content span full row width
@@ -345,12 +346,12 @@ struct SidebarView: View {
         // .accessibilityAddTraits(.isButton) announces this as a button to VoiceOver
         // This restores the control semantics that Button provided
         .accessibilityAddTraits(.isButton)
-        // .accessibilityLabel provides the accessible name for the row
-        // Uses item.displayName which maps each SidebarItem case to a human-readable string
-        .accessibilityLabel(item.displayName)
+        // .accessibilityLabel provides the localized accessible name for the row
+        // Uses the accessibilityLabel parameter which should match the visible localized text
+        .accessibilityLabel(accessibilityLabel)
         // .accessibilityInputLabels allows users to navigate by typing the item name
-        // Uses the same displayName for consistency with the label
-        .accessibilityInputLabels([item.displayName])
+        // Uses the same localized accessibilityLabel for consistency
+        .accessibilityInputLabels([accessibilityLabel])
         // .onHover listens for mouse enter/leave events (macOS specific, similar to CSS :hover)
         // Closure parameter isHovering: Bool indicates if mouse is over element
         .onHover { isHovering in
