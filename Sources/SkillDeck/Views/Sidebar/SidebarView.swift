@@ -73,7 +73,10 @@ struct SidebarView: View {
         List(selection: $selection) {
             // Section creates groups (shown as collapsible groups in macOS sidebar)
             Section {
-                sidebarRow(item: .dashboard) {
+                sidebarRow(
+                    item: .dashboard,
+                    accessibilityLabel: L10n.string(L10nKeys.sidebarDashboard, bundle: localizationBundle, locale: locale)
+                ) {
                     Label {
                         LText(key: L10nKeys.sidebarDashboard)
                     } icon: {
@@ -91,7 +94,10 @@ struct SidebarView: View {
                 )
 
                 // F09: Registry browser — browse and search skills.sh catalog
-                sidebarRow(item: .registry) {
+                sidebarRow(
+                    item: .registry,
+                    accessibilityLabel: L10n.string(L10nKeys.sidebarRegistry, bundle: localizationBundle, locale: locale)
+                ) {
                     Label {
                         LText(key: L10nKeys.sidebarRegistry)
                     } icon: {
@@ -103,7 +109,10 @@ struct SidebarView: View {
                         .fill(rowBackground(for: .registry))
                 )
 
-                sidebarRow(item: .clawHub) {
+                sidebarRow(
+                    item: .clawHub,
+                    accessibilityLabel: L10n.string(L10nKeys.sidebarClawHub, bundle: localizationBundle, locale: locale)
+                ) {
                     Label {
                         LText(key: L10nKeys.sidebarClawHub)
                     } icon: {
@@ -124,7 +133,10 @@ struct SidebarView: View {
                 ForEach(AgentType.allCases) { agentType in
                     let agent = skillManager.agents.first { $0.type == agentType }
 
-                    sidebarRow(item: .agent(agentType)) {
+                    sidebarRow(
+                        item: .agent(agentType),
+                        accessibilityLabel: agentType.displayName
+                    ) {
                         Label {
                             Text(agentType.displayName)
                                 .foregroundStyle(selection == .agent(agentType) ? .primary : .secondary)
@@ -287,32 +299,68 @@ struct SidebarView: View {
     /// @ViewBuilder allows closure to return different View types (similar to Java's generic methods)
     /// `some View` is Swift's opaque return type,
     /// means "returns some View, but caller doesn't need to know the specific type"
+    ///
+    /// Implementation note: Uses `onTapGesture` instead of `Button` to avoid gesture conflicts
+    /// with `List(selection:)`. List's native selection gesture can intercept Button tap events,
+    /// causing intermittent unresponsiveness. Using `onTapGesture` with `contentShape(Rectangle())`
+    /// ensures reliable click detection across the entire row.
+    ///
+    /// - Parameters:
+    ///   - item: The sidebar item identifier used for selection state
+    ///   - accessibilityLabel: Localized string for VoiceOver announcement (should match visible text)
+    ///   - label: View builder closure providing the visible label content
     @ViewBuilder
     private func sidebarRow<Label: View>(
         item: SidebarItem,
+        accessibilityLabel: String,
         @ViewBuilder label: () -> Label
     ) -> some View {
-        // Button ensures clicking always updates selection (List native selection is unreliable in some macOS versions)
-        Button { selection = item } label: { label().appFont(.body) }
-            // .buttonStyle(.plain) removes button default styles (border, press effect, etc.)
-            .buttonStyle(.plain)
-            .foregroundStyle(selection == item ? .primary : .secondary)
-            // .contentShape(Rectangle()) expands interaction area (click+hover) to entire row rectangle
-            // By default Button only responds to events in content (text/icon) area,
-            // row's blank area doesn't trigger .onHover, causing hover effect to only appear above text
-            // Similar to CSS pointer-events: all + width: 100%
-            .contentShape(Rectangle())
-            // .tag 关联选中值，让 List 知道这一行对应哪个 SidebarItem
-            .tag(item)
-            // .onHover listens for mouse enter/leave events (macOS specific, similar to CSS :hover)
-            // Closure parameter isHovering: Bool indicates if mouse is over element
-            .onHover { isHovering in
-                // Use withAnimation to add transition animation, .easeInOut is ease-in-out curve
-                // duration: 0.15 is 150 milliseconds, fast enough but not abrupt
-                withAnimation(.easeInOut(duration: 0.15)) {
-                    hoveredItem = isHovering ? item : nil
-                }
+        // Use HStack + Spacer to make content span full row width
+        // Ensure click area and visual feedback cover entire row, not just text/icon area
+        HStack(spacing: 0) {
+            label()
+                .appFont(.body)
+            Spacer(minLength: 0)
+        }
+        // Horizontal padding keeps content appropriate distance from row edges, consistent with sidebar style
+        .padding(.horizontal, 4)
+        // Vertical padding ensures hover/selection background height matches macOS sidebar row height
+        .padding(.vertical, 4)
+        // Remove default foreground styling - apply directly to label content instead
+        .foregroundStyle(selection == item ? .primary : .secondary)
+        // .contentShape(Rectangle()) expands interaction area (click+hover) to entire row rectangle
+        // Must be applied to container that already spans full width to take effect
+        // Similar to CSS pointer-events: all + width: 100%
+        .contentShape(Rectangle())
+        // .onTapGesture handles click events - using this instead of Button to avoid
+        // gesture conflicts with List(selection:) which can intercept Button taps
+        .onTapGesture {
+            selection = item
+        }
+        // .tag associates selection value, letting List know which SidebarItem this row corresponds to
+        .tag(item)
+        // Accessibility: Restore button semantics lost when replacing Button with HStack + onTapGesture
+        // .accessibilityElement makes the entire row a single accessibility element (similar to Button behavior)
+        // children: .combine merges child labels into a single announcement
+        .accessibilityElement(children: .combine)
+        // .accessibilityAddTraits(.isButton) announces this as a button to VoiceOver
+        // This restores the control semantics that Button provided
+        .accessibilityAddTraits(.isButton)
+        // .accessibilityLabel provides the localized accessible name for the row
+        // Uses the accessibilityLabel parameter which should match the visible localized text
+        .accessibilityLabel(accessibilityLabel)
+        // .accessibilityInputLabels allows users to navigate by typing the item name
+        // Uses the same localized accessibilityLabel for consistency
+        .accessibilityInputLabels([accessibilityLabel])
+        // .onHover listens for mouse enter/leave events (macOS specific, similar to CSS :hover)
+        // Closure parameter isHovering: Bool indicates if mouse is over element
+        .onHover { isHovering in
+            // Use withAnimation to add transition animation, .easeInOut is ease-in-out curve
+            // duration: 0.15 is 150 milliseconds, fast enough but not abrupt
+            withAnimation(.easeInOut(duration: 0.15)) {
+                hoveredItem = isHovering ? item : nil
             }
+        }
     }
 
     /// Returns row background color based on selection/hover state
