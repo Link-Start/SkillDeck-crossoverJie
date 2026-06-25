@@ -163,8 +163,19 @@ actor GitService {
     ) async throws -> String? {
         // 1. Get list of all commits that modified this path
         // --format=%H only outputs commit hash (one per line), no other info
+        //
+        // For root-level skills, folderPath is empty. An empty pathspec after "--"
+        // causes git to error with "empty string is not a valid pathspec".
+        // Instead, omit the "--" separator entirely to get all commits in the repo.
+        // For sub-directory skills, use "-- <path>" to filter commits touching that path.
+        let arguments: [String]
+        if folderPath.isEmpty {
+            arguments = ["log", "--format=%H"]
+        } else {
+            arguments = ["log", "--format=%H", "--", folderPath]
+        }
         let logOutput = try await runGitCommand(
-            arguments: ["log", "--format=%H", "--", folderPath],
+            arguments: arguments,
             workingDirectory: repoDir
         )
 
