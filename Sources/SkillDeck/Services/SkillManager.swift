@@ -628,13 +628,8 @@ final class SkillManager {
             return (false, nil, nil)
         }
 
-        // Derive folderPath from skillPath (remove trailing "/SKILL.md")
-        let folderPath: String
-        if lockEntry.skillPath.hasSuffix("/SKILL.md") {
-            folderPath = String(lockEntry.skillPath.dropLast("/SKILL.md".count))
-        } else {
-            folderPath = lockEntry.skillPath
-        }
+        // Derive folderPath from skillPath (e.g. "skills/foo/SKILL.md" → "skills/foo", "SKILL.md" → "")
+        let folderPath = Self.deriveFolderPath(from: lockEntry.skillPath)
 
         // Check if CommitHashCache has local commit hash
         let localCommitHash = await commitHashCache.getHash(for: skill.id)
@@ -720,13 +715,8 @@ final class SkillManager {
                 for skill in groupSkills {
                     guard let lockEntry = skill.lockEntry else { continue }
 
-                    // Derive folderPath
-                    let folderPath: String
-                    if lockEntry.skillPath.hasSuffix("/SKILL.md") {
-                        folderPath = String(lockEntry.skillPath.dropLast("/SKILL.md".count))
-                    } else {
-                        folderPath = lockEntry.skillPath
-                    }
+                    // Derive folderPath from skillPath
+                    let folderPath = Self.deriveFolderPath(from: lockEntry.skillPath)
 
                     do {
                         let remoteHash = try await gitService.getTreeHash(for: folderPath, in: repoDir)
@@ -796,13 +786,8 @@ final class SkillManager {
         guard let lockEntry = skill.lockEntry else { return }
         guard lockEntry.sourceType == "github" else { return }
 
-        // Derive folderPath
-        let folderPath: String
-        if lockEntry.skillPath.hasSuffix("/SKILL.md") {
-            folderPath = String(lockEntry.skillPath.dropLast("/SKILL.md".count))
-        } else {
-            folderPath = lockEntry.skillPath
-        }
+        // Derive folderPath from skillPath stored in lock file
+        let folderPath = Self.deriveFolderPath(from: lockEntry.skillPath)
 
         // 1. Clone source repository
         let repoDir = try await gitService.shallowClone(repoURL: lockEntry.sourceUrl)
@@ -849,6 +834,36 @@ final class SkillManager {
     }
 
     // MARK: - Helper Methods
+
+    /// Derive the git folder path from the skillPath stored in the lock file.
+    ///
+    /// The lock file stores `skillPath` as the relative path to SKILL.md within the repo:
+    /// - Root-level skill: `"SKILL.md"` (SKILL.md directly in repo root)
+    /// - Sub-directory skill: `"skills/foo/SKILL.md"` (SKILL.md in a subdirectory)
+    ///
+    /// This helper converts skillPath to the folder path used in `git rev-parse HEAD:<path>`:
+    /// - `"SKILL.md"` → `""` (empty string = repo root)
+    /// - `"skills/foo/SKILL.md"` → `"skills/foo"`
+    /// - Other values passed through unchanged
+    ///
+    /// This was extracted from inline logic in checkForUpdate/checkAllUpdates/updateSkill
+    /// to ensure consistent handling of root-level skills across all code paths.
+    ///
+    /// - Parameter skillPath: The skillPath value from a LockEntry
+    /// - Returns: The folder path for git tree hash operations
+    static func deriveFolderPath(from skillPath: String) -> String {
+        // Root-level skill: SKILL.md lives directly in the repository root (not in a subdirectory).
+        // folderPath must be empty so git operations target the repo root tree.
+        if skillPath == "SKILL.md" {
+            return ""
+        }
+        // Sub-directory skill: strip "/SKILL.md" suffix to get the folder path.
+        // e.g. "skills/find-skills/SKILL.md" → "skills/find-skills"
+        if skillPath.hasSuffix("/SKILL.md") {
+            return String(skillPath.dropLast("/SKILL.md".count))
+        }
+        return skillPath
+    }
 
     /// Get local commit hash for specified skill (read from CommitHashCache)
     ///
