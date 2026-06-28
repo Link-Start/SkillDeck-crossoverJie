@@ -16,7 +16,7 @@
 <meta property="og:url" content="https://crossoverjie.github.io/SkillDeck/changelog">
 <meta name="author" content="crossoverJie">
 <meta name="generator" content="Kami">
-<link rel="icon" type="image/svg+xml" href="../Assets/AppIcon.svg">
+<link rel="icon" type="image/svg+xml" href="./AppIcon.svg">
 <link rel="canonical" href="https://crossoverjie.github.io/SkillDeck/changelog">
 <style>
 /* ========== Tokens ========== */
@@ -82,6 +82,62 @@ a:hover { color: var(--brand-light); }
   margin: 0 auto;
   padding: 88px 64px 120px;
 }
+
+/* ========== Top bar ========== */
+
+.topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: var(--parchment);
+  border-bottom: 1px solid var(--border-soft);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.topbar-inner {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 64px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--near-black);
+}
+.topbar-brand:hover { color: var(--near-black); }
+.topbar-brand img {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+}
+.topbar-brand span {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: 17px;
+  letter-spacing: 0;
+}
+.topbar-links {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.topbar-links a {
+  font-family: var(--latin-ui);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--stone);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.topbar-links a:hover { color: var(--brand); }
 
 /* ========== Hero ========== */
 
@@ -286,19 +342,9 @@ footer.foot {
   color: var(--stone);
 }
 .foot .mark {
-  display: grid;
-  grid-template-columns: 48px auto;
-  grid-template-rows: auto auto;
-  column-gap: 14px;
-  align-items: start;
-}
-.foot .mark .foot-logo {
-  grid-row: 1 / span 2;
-  width: 48px;
-  height: 48px;
-  flex-shrink: 0;
-  border-radius: 10px;
-  object-fit: cover;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 .foot .mark .wm-name {
   font-family: var(--serif);
@@ -346,6 +392,7 @@ footer.foot {
 /* ========== Responsive ========== */
 
 @media (max-width: 880px) {
+  .topbar-inner { padding: 0 32px; }
   .page { padding: 64px 32px 80px; }
   .hero { margin-bottom: 40px; padding-bottom: 32px; }
   .hero h1 { font-size: 52px; }
@@ -354,7 +401,11 @@ footer.foot {
 }
 
 @media (max-width: 480px) {
-  .page { padding: 48px 20px 64px; }
+  .topbar-inner { padding: 0 20px; height: 48px; }
+  .topbar-brand span { font-size: 15px; }
+  .topbar-links { gap: 16px; }
+  .topbar-links a { font-size: 12px; }
+  .page { padding-top: 64px; padding-left: 20px; padding-right: 20px; }
   .hero h1 { font-size: 44px; }
   .version-head { flex-direction: column; gap: 4px; }
   .changes li { flex-wrap: wrap; gap: 6px; }
@@ -371,16 +422,25 @@ footer.foot {
 <body>
 <main class="page">
 
+  <!-- ============ Top bar ============ -->
+  <nav class="topbar">
+    <div class="topbar-inner">
+      <a href="index.html" class="topbar-brand">
+        <img src="./AppIcon.svg" alt="SkillDeck">
+        <span>SkillDeck</span>
+      </a>
+      <div class="topbar-links">
+        <a href="index.html">Home</a>
+        <a href="https://github.com/crossoverJie/SkillDeck" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://github.com/crossoverJie/SkillDeck/releases" target="_blank" rel="noopener">Download</a>
+      </div>
+    </div>
+  </nav>
+
   <!-- ============ Hero ============ -->
   <header class="hero">
     <div class="eyebrow">
       <span>Changelog</span>
-      <span class="hero-links">
-        <a href="index.html">Home</a>
-        <a href="https://github.com/crossoverJie/SkillDeck" target="_blank" rel="noopener" aria-label="GitHub">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
-        </a>
-      </span>
     </div>
 
     <h1>Changelog</h1>
@@ -751,7 +811,6 @@ footer.foot {
   <!-- ============ Footer ============ -->
   <footer class="foot">
     <div class="mark">
-      <img class="foot-logo" src="../Assets/AppIcon.svg" alt="SkillDeck">
       <span class="wm-name">SkillDeck</span>
       <span class="wm-line">Manage AI agent skills, beautifully.</span>
     </div>
