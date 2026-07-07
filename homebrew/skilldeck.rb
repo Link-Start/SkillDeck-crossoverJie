@@ -24,7 +24,7 @@ cask "skilldeck" do
   homepage "https://github.com/crossoverJie/SkillDeck"
 
   # 要求 macOS Sonoma 或更高版本
-  depends_on macos: ">= :sonoma"
+  depends_on macos: :sonoma
 
   # 告诉 Homebrew 将 .app 移动到 /Applications/
   app "SkillDeck.app"
