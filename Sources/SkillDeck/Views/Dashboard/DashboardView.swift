@@ -180,4 +180,5 @@ struct DashboardView: View {
             return "中"
         }
     }
+
 }

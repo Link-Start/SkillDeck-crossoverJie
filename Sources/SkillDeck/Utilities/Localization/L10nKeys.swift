@@ -90,6 +90,20 @@ enum L10nKeys {
     static let dashboardLanguageMenuLabel = "dashboard.language.menuLabel"
     static let dashboardLanguageMenuHelp = "dashboard.language.menuHelp"
 
+    static let usageSectionTitle = "usage.section.title"
+    static let usageScanAction = "usage.scan.action"
+    static let usageNotScanned = "usage.notScanned"
+    static let usageScanning = "usage.scanning"
+    static let usageDetectedCalls = "usage.detectedCalls"
+    static let usageLastUsed = "usage.lastUsed"
+    static let usageNeverDetected = "usage.neverDetected"
+    static let usageUnavailable = "usage.unavailable"
+    static let usageSource = "usage.source"
+    static let usageSourceCodex = "usage.source.codex"
+    static let usageCaveat = "usage.caveat"
+    static let usageRefreshHelp = "usage.refresh.help"
+    static let usageIncompleteHelp = "usage.incomplete.help"
+
     static let allKeys: [String] = [
         appName,
         settingsTabGeneral,
@@ -163,5 +177,18 @@ enum L10nKeys {
         emptySelectSkillSubtitleClawHub,
         dashboardLanguageMenuLabel,
         dashboardLanguageMenuHelp,
+        usageSectionTitle,
+        usageScanAction,
+        usageNotScanned,
+        usageScanning,
+        usageDetectedCalls,
+        usageLastUsed,
+        usageNeverDetected,
+        usageUnavailable,
+        usageSource,
+        usageSourceCodex,
+        usageCaveat,
+        usageRefreshHelp,
+        usageIncompleteHelp,
     ]
 }

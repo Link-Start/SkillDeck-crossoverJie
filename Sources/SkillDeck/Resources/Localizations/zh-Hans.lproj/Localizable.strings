@@ -91,3 +91,17 @@
 
 "dashboard.language.menuLabel" = "语言";
 "dashboard.language.menuHelp" = "切换应用语言";
+
+"usage.section.title" = "使用情况";
+"usage.scan.action" = "扫描历史";
+"usage.notScanned" = "尚未在此设备上扫描使用记录";
+"usage.scanning" = "正在扫描本地 Codex 历史记录…";
+"usage.detectedCalls" = "检测到的使用次数";
+"usage.lastUsed" = "最近检测时间";
+"usage.neverDetected" = "在现有 Codex 历史记录中未检测到使用";
+"usage.unavailable" = "Codex 历史记录不可用，无法判断此前是否使用";
+"usage.source" = "数据来源";
+"usage.source.codex" = "本地 Codex 历史记录";
+"usage.caveat" = "仅供参考：缺失的日志、其他 Agent 以及项目引用均未计入。";
+"usage.refresh.help" = "重新扫描 Codex 使用记录";
+"usage.incomplete.help" = "部分 Codex 历史记录无法读取，使用统计可能不完整";
